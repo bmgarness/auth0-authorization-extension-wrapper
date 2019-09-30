@@ -32,8 +32,9 @@ export class Auth0Wrapper {
 		}
 	} = {};
 	private defaultCacheLifeSpan: number;
+	private cacheOn: boolean;
 
-	constructor(defaultCacheLifeSpan = 10000) {
+	constructor(defaultCacheLifeSpan = 10000, cacheOn = true) {
 		this.defaultCacheLifeSpan = defaultCacheLifeSpan;
 	}
 
@@ -77,35 +78,48 @@ export class Auth0Wrapper {
 	// PRIVATE HELPERS
 
 	private async get<T>(url: string, body?: any): Promise<T> {
-		const cached = this.getFromCache(url, Date.now());
-		if (cached) {
-			return Promise.resolve(cached);
+		let response;
+		if (this.cacheOn) {
+			const cached = this.getFromCache(url, Date.now());
+			if (cached) {
+				return Promise.resolve(cached);
+			}
+			response = await request.get(this.apiUrl + url, this.createOptions(body));
+			this.addToCache(url, response);
+		} else {
+			response = await request.get(this.apiUrl + url, this.createOptions(body));
 		}
-		let response = await request.get(this.apiUrl + url, this.createOptions(body));
-		this.addToCache(url, response);
 		return response;
 	}
 
 	private async post<T>(url: string, body: any): Promise<T> {
-		this.invalidateCache(url);
+		if (this.cacheOn) {
+			this.invalidateCache(url);
+		}
 		let response = await request.post(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}
 
 	private async put<T>(url: string, body: any): Promise<T> {
-		this.invalidateCache(url);
+		if (this.cacheOn) {
+			this.invalidateCache(url);
+		}
 		let response = await request.put(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}
 
 	private async patch<T>(url: string, body: any): Promise<T> {
-		this.invalidateCache(url);
+		if (this.cacheOn) {
+			this.invalidateCache(url);
+		}
 		let response = await request.patch(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}
 
 	private async delete<T>(url: string, body?: any): Promise<T> {
-		this.invalidateCache(url);
+		if (this.cacheOn) {
+			this.invalidateCache(url);
+		}
 		let response = await request.delete(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}

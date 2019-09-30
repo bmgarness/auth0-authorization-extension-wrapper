@@ -37,7 +37,6 @@ describe('User', () => {
 			.reply(200, {access_token: 'VALID_TOKEN', expires_in: 86400});
 		await wrapper.authenticate(settings);
 		assert.ok(wrapper.isAuthenticated);
-		userId = settings.auth0TestUserId;
 	});
 
 	// User roles
@@ -51,7 +50,7 @@ describe('User', () => {
 
 	it('should query the roles of the user', async () => {
 	  const scope = nock(settings.auth0AuthExtensionUrl)
-      .get(`/users/${settings.auth0TestUserId}/roles`)
+      .get(`/users/${userId}/roles`)
       .reply(200, [shortRole]);
 		let roles = await wrapper.getUserRoles(userId);
 		assert.isArray(roles);
@@ -60,11 +59,11 @@ describe('User', () => {
 
 	it('can add role', async () => {
 	  const scope1 = nock(settings.auth0AuthExtensionUrl)
-      .patch(`/users/${settings.auth0TestUserId}/roles`)
+      .patch(`/users/${userId}/roles`)
       .reply(204);
 		await wrapper.addRoleForUser(userId, role._id);
     const scope2 = nock(settings.auth0AuthExtensionUrl)
-      .get(`/users/${settings.auth0TestUserId}/roles`)
+      .get(`/users/${userId}/roles`)
       .reply(200, [shortRole, role]);
 		let roles = await wrapper.getUserRoles(userId);
 		assert.equal(roles.length, userRoleLength + 1);
@@ -80,11 +79,11 @@ describe('User', () => {
 
 	it('can remove added role', async () => {
     const scope1 = nock(settings.auth0AuthExtensionUrl)
-      .delete(`/users/${settings.auth0TestUserId}/roles`)
+      .delete(`/users/${userId}/roles`)
       .reply(204);
 		await wrapper.removeRoleFromUser(userId, role._id);
     const scope2 = nock(settings.auth0AuthExtensionUrl)
-      .get(`/users/${settings.auth0TestUserId}/roles`)
+      .get(`/users/${userId}/roles`)
       .reply(200, [shortRole]);
 		let roles = await wrapper.getUserRoles(userId);
 		assert.equal(roles.length, userRoleLength);
@@ -110,7 +109,7 @@ describe('User', () => {
 
 	it('should query the groups of the user', async () => {
 	  const scope = nock(settings.auth0AuthExtensionUrl)
-      .get(`/users/${settings.auth0TestUserId}/groups`)
+      .get(`/users/${userId}/groups`)
       .reply(200, []);
 		let groups = await wrapper.getUserGroups(userId);
 		assert.isArray(groups);
@@ -119,11 +118,11 @@ describe('User', () => {
 
 	it('can add group', async () => {
     const scope1 = nock(settings.auth0AuthExtensionUrl)
-      .patch(`/users/${settings.auth0TestUserId}/groups`)
+      .patch(`/users/${userId}/groups`)
       .reply(204);
 		await wrapper.addGroupForUser(userId, group._id);
     const scope2 = nock(settings.auth0AuthExtensionUrl)
-      .get(`/users/${settings.auth0TestUserId}/groups`)
+      .get(`/users/${userId}/groups`)
       .reply(200, [group]);
 		let groups = await wrapper.getUserGroups(userId);
 		assert.equal(groups.length, userGroupLength + 1);
@@ -143,7 +142,7 @@ describe('User', () => {
       .reply(204);
 	  await wrapper.removeGroupFromUser(userId, group._id);
     const scope2 = nock(settings.auth0AuthExtensionUrl)
-      .get(`/users/${settings.auth0TestUserId}/groups`)
+      .get(`/users/${userId}/groups`)
       .reply(200, []);
 		let groups = await wrapper.getUserGroups(userId);
 		assert.equal(groups.length, userGroupLength);
