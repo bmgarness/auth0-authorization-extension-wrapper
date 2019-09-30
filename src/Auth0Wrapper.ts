@@ -1,4 +1,5 @@
 import * as request from 'request-promise';
+// require('request-promise').debug = true;
 
 
 import {
@@ -11,6 +12,7 @@ import {
 	Group,
 	GroupResponse,
 } from './Auth0Types';
+import {Response} from "request";
 
 
 export interface Auth0WrapperSettings {
@@ -21,21 +23,36 @@ export interface Auth0WrapperSettings {
 }
 
 export class Auth0Wrapper {
-	private token: string;
+	private token: {val: string, exp: Number};
 	private apiUrl: string;
+	private cache: {
+		[url: string]: {
+			exp: Date,
+			response: any
+		}
+	} = {};
+	private defaultCacheLifeSpan: number;
 
-	get isAuthenticated() { return !!this.token; }
+	constructor(defaultCacheLifeSpan = 10000) {
+		this.defaultCacheLifeSpan = defaultCacheLifeSpan;
+	}
+
+	get isAuthenticated() {
+		return !!this.token.val && this.token.exp > Date.now();
+	}
 	getToken() { return this.token; }
 
 	private createOptions(body?: any): {
+		body?: any;
 		headers: { [name: string]: string; };
 		json: boolean;
-		body?: any;
+		qs: any;
 	} {
 		return {
-			headers: { 'Authorization': 'Bearer ' + this.token },
+			headers: { 'Authorization': 'Bearer ' + this.token.val },
 			json: true,
 			body,
+			qs: {},
 		};
 	}
 
@@ -52,37 +69,44 @@ export class Auth0Wrapper {
 			form: credentials,
 			json: true,
 		});
-		this.token = result.access_token;
+		let exp = 0;
+		exp = Date.now() + (result.expires_in * 1000);
+		this.token = {val: result.access_token, exp};
 	}
 
 	// PRIVATE HELPERS
 
-	private async get<T>(url: string): Promise<T> {
-		let response = await request.get(this.apiUrl + url, this.createOptions());
-		// console.log('RESPONSE', response);
+	private async get<T>(url: string, body?: any): Promise<T> {
+		const cached = this.getFromCache(url, Date.now());
+		if (cached) {
+			return Promise.resolve(cached);
+		}
+		let response = await request.get(this.apiUrl + url, this.createOptions(body));
+		this.addToCache(url, response);
 		return response;
 	}
 
 	private async post<T>(url: string, body: any): Promise<T> {
+		this.invalidateCache(url);
 		let response = await request.post(this.apiUrl + url, this.createOptions(body));
-		// console.log('RESPONSE', response);
 		return response;
 	}
 
 	private async put<T>(url: string, body: any): Promise<T> {
+		this.invalidateCache(url);
 		let response = await request.put(this.apiUrl + url, this.createOptions(body));
-		// console.log('RESPONSE', response);
 		return response;
 	}
 
 	private async patch<T>(url: string, body: any): Promise<T> {
+		this.invalidateCache(url);
 		let response = await request.patch(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}
 
 	private async delete<T>(url: string, body?: any): Promise<T> {
+		this.invalidateCache(url);
 		let response = await request.delete(this.apiUrl + url, this.createOptions(body));
-		// console.log('RESPONSE', response);
 		return response;
 	}
 
@@ -194,6 +218,10 @@ export class Auth0Wrapper {
 		return (await this.get<Group>('/groups/' + id));
 	}
 
+	async getExpandedGroup(id: string): Promise<Group> {
+		return (await this.get<Group>('/groups/' + id, {qs: 'expand'}))
+	}
+
 	async createGroup(group: Group): Promise<Group> {
 		return (await this.post<Group>('/groups', {
 			name: group.name,
@@ -210,5 +238,31 @@ export class Auth0Wrapper {
 
 	async deleteGroup(id: string) {
 		return this.delete<void>('/groups/' + id);
+	}
+
+	private addToCache(url: string, response: any) {
+		this.cache[url] = {
+			exp: new Date(Date.now() + this.defaultCacheLifeSpan),
+			response
+		};
+
+	}
+
+	private getFromCache(url: string, date: number) {
+		const cached = this.cache[url];
+		if (cached && cached.exp.getTime() > date) {
+			return cached.response;
+		}
+		return null;
+	}
+
+	private invalidateCache(url: string) {
+		let pattern = url.split('/');
+		pattern = pattern.slice(1, pattern.length);
+		let builtString = '';
+		pattern.forEach((p) => {
+			builtString += '/' + p;
+			this.cache[builtString] = undefined;
+		});
 	}
 }

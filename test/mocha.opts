@@ -1,0 +1,7 @@
+--require ts-node/register
+--ui bdd
+--exit
+--c
+--diff
+--full-trace
+./test/test-*.ts

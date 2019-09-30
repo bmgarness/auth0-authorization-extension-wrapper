@@ -8,3 +8,5 @@ typings.json
 tslint.json
 src/
 test/
+.idea/
+config.json

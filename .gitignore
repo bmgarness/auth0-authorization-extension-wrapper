@@ -7,3 +7,5 @@ test/*.js
 *.log
 *.bat
 *.sh
+
+config.json
