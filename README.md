@@ -26,7 +26,6 @@ Then, pass an object with
 
 You can find all these attributes in the API section of Auth0 Dashboard
 
-to
 ```javascript
 wrapper.authenticate({...(above attributes)...})
 ```
