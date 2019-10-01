@@ -12,7 +12,6 @@ import {
 	Group,
 	GroupResponse,
 } from './Auth0Types';
-import {Response} from "request";
 
 
 export interface Auth0WrapperSettings {
@@ -31,10 +30,9 @@ export class Auth0Wrapper {
 			response: any
 		}
 	} = {};
-	private defaultCacheLifeSpan: number;
-	private cacheOn: boolean;
+	public defaultCacheLifeSpan: number;
 
-	constructor(defaultCacheLifeSpan = 10000, cacheOn = true) {
+	constructor(defaultCacheLifeSpan = 10000) {
 		this.defaultCacheLifeSpan = defaultCacheLifeSpan;
 	}
 
@@ -78,48 +76,35 @@ export class Auth0Wrapper {
 	// PRIVATE HELPERS
 
 	private async get<T>(url: string, body?: any): Promise<T> {
-		let response;
-		if (this.cacheOn) {
-			const cached = this.getFromCache(url, Date.now());
-			if (cached) {
-				return Promise.resolve(cached);
-			}
-			response = await request.get(this.apiUrl + url, this.createOptions(body));
-			this.addToCache(url, response);
-		} else {
-			response = await request.get(this.apiUrl + url, this.createOptions(body));
+		const cached = this.getFromCache(url, Date.now());
+		if (cached) {
+			return Promise.resolve(cached);
 		}
+		let response = await request.get(this.apiUrl + url, this.createOptions(body));
+		this.addToCache(url, response);
 		return response;
 	}
 
 	private async post<T>(url: string, body: any): Promise<T> {
-		if (this.cacheOn) {
-			this.invalidateCache(url);
-		}
+		this.invalidateCache(url);
 		let response = await request.post(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}
 
 	private async put<T>(url: string, body: any): Promise<T> {
-		if (this.cacheOn) {
-			this.invalidateCache(url);
-		}
+		this.invalidateCache(url);
 		let response = await request.put(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}
 
 	private async patch<T>(url: string, body: any): Promise<T> {
-		if (this.cacheOn) {
-			this.invalidateCache(url);
-		}
+		this.invalidateCache(url);
 		let response = await request.patch(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}
 
 	private async delete<T>(url: string, body?: any): Promise<T> {
-		if (this.cacheOn) {
-			this.invalidateCache(url);
-		}
+		this.invalidateCache(url);
 		let response = await request.delete(this.apiUrl + url, this.createOptions(body));
 		return response;
 	}
