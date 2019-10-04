@@ -22,7 +22,7 @@ export interface Auth0WrapperSettings {
 }
 
 export class Auth0Wrapper {
-	private token: {val: string, exp: Number};
+	private token: {val: string, exp: Number} = {val: '', exp: 0};
 	private apiUrl: string;
 	private cache: {
 		[url: string]: {
@@ -68,6 +68,7 @@ export class Auth0Wrapper {
 			form: credentials,
 			json: true,
 		});
+		console.log(result);
 		let exp = 0;
 		exp = Date.now() + (result.expires_in * 1000);
 		this.token = {val: result.access_token, exp};

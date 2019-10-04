@@ -1,6 +1,6 @@
 {
   "name": "@meterfeeder/auth0-authorization-extension-wrapper",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "description": "Helper lib for Auth0 Authorization Extension with type support, using promises",
   "main": "lib/index.js",
   "keywords": [
