@@ -22,7 +22,7 @@ export interface Auth0WrapperSettings {
 }
 
 export class Auth0Wrapper {
-	private token: {val: string, exp: Number} = {val: '', exp: 0};
+	private token: {val: string, exp: Number};
 	private apiUrl: string;
 	private cache: {
 		[url: string]: {
@@ -37,7 +37,7 @@ export class Auth0Wrapper {
 	}
 
 	get isAuthenticated() {
-		return !!this.token.val && this.token.exp > Date.now();
+		return !!this.token && !!this.token.val && this.token.exp > Date.now();
 	}
 	getToken() { return this.token; }
 
