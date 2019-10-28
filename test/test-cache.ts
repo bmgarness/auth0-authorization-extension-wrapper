@@ -35,21 +35,21 @@ describe('cache', () => {
     assert.ok(wrapper.isAuthenticated);
   });
 
-  // it('returns old results made within 10 seconds', async () => {
-  //   const stub = sinon.stub(Date, "now");
-  //   stub.onCall(0).returns(10000000);
-  //   stub.onCall(1).returns(10000000);
-  //   stub.onCall(2).returns(10000001);
-  //   const scope = nock(settings.auth0AuthExtensionUrl)
-  //     .get('/groups/1234', {"qs": "expand"})
-  //     .reply(200, created);
-  //   const expanded = await wrapper.getExpandedGroup(created._id);
-  //   assertGroup(expanded);
-  //   const expanded2 = await wrapper.getExpandedGroup(created._id);
-  //   assert.equal(expanded, expanded2);
-  //
-  //   stub.restore();
-  // });
+  it('returns old results made within 10 seconds', async () => {
+    const stub = sinon.stub(Date, "now");
+    stub.onCall(0).returns(10000000);
+    stub.onCall(1).returns(10000000);
+    stub.onCall(2).returns(10000001);
+    const scope = nock(settings.auth0AuthExtensionUrl)
+      .get('/groups/1234', {"qs": "expand"})
+      .reply(200, created);
+    const expanded = await wrapper.getExpandedGroup(created._id);
+    assertGroup(expanded);
+    const expanded2 = await wrapper.getExpandedGroup(created._id);
+    assert.equal(expanded, expanded2);
+
+    stub.restore();
+  });
 
   it('invalidates the cache', async () => {
     const scope = nock(settings.auth0AuthExtensionUrl)
