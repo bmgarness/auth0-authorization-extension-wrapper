@@ -67,4 +67,10 @@ describe('cache', () => {
     const res2 = await wrapper.getExpandedGroup(created._id);
     assert.equal(res.name, res2.name);
   });
+
+  it('can change the lifespan of a cache', () => {
+    assert.equal(wrapper.defaultCacheLifeSpan, 10000);
+    wrapper.defaultCacheLifeSpan = 20000;
+    assert.equal(wrapper.defaultCacheLifeSpan, 20000);
+  });
 });

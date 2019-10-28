@@ -1,6 +1,6 @@
 {
   "name": "@meterfeeder/auth0-authorization-extension-wrapper",
-  "version": "1.0.0",
+  "version": "0.2.1",
   "description": "Helper lib for Auth0 Authorization Extension with type support, using promises",
   "main": "lib/index.js",
   "keywords": [
@@ -38,7 +38,7 @@
     "build": "tsc -p src",
     "build:test": "tsc -p test",
     "test": "mocha --opts=test/mocha.opts",
-    "test-with-coverage": "nyc mocha --opts=test/mocha-coverage.opts",
+    "test-with-coverage": "nyc --reporter=text mocha --opts=test/mocha.opts",
     "clear": "rm -Rf lib && rm -Rf test/*.js"
   },
   "author": {
