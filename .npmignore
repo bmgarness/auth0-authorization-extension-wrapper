@@ -11,3 +11,4 @@ test/
 .idea/
 config.json
 node_modules
+.nyc_output
