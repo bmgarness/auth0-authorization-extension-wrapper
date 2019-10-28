@@ -9,3 +9,5 @@ test/*.js
 *.sh
 
 config.json
+.idea
+.nyc_output

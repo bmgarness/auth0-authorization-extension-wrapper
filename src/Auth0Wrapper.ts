@@ -68,7 +68,6 @@ export class Auth0Wrapper {
 			form: credentials,
 			json: true,
 		});
-		console.log(result);
 		let exp = 0;
 		exp = Date.now() + (result.expires_in * 1000);
 		this.token = {val: result.access_token, exp};
@@ -187,12 +186,12 @@ export class Auth0Wrapper {
 
 	async addRoleForUser(id: string, roles: string | string[]) {
 		if (typeof roles === 'string') roles = [roles];
-		return this.patch(`/users/${id}/roles`, roles);
+		return this.patch<void>(`/users/${id}/roles`, roles);
 	}
 
 	async removeRoleFromUser(id: string, roles: string | string[]) {
 		if (typeof roles === 'string') roles = [roles];
-		return this.delete(`/users/${id}/roles`, roles);
+		return this.delete<void>(`/users/${id}/roles`, roles);
 	}
 
 	async getUserGroups(id: string) {
@@ -201,11 +200,11 @@ export class Auth0Wrapper {
 
 	async addGroupForUser(id: string, groups: string | string[]) {
 		if (typeof groups === 'string') groups = [groups];
-		return this.patch(`/users/${id}/groups`, groups);
+		return this.patch<void>(`/users/${id}/groups`, groups);
 	}
 
 	async removeGroupFromUser(id: string, group: string) {
-		return this.delete(`/groups/${group}/members`, [id]);
+		return this.delete<void>(`/groups/${group}/members`, [id]);
 	}
 
 	// GROUPS
